@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Anika — Pick Your Lens</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;700;800&family=Instrument+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  /* ===========================
+     TOKENS & RESET
+  =========================== */
+  :root {
+    --bg: #f5f0ff;
+    --surface: #ede6ff;
+    --border: #c8b8f0;
+    --rose: #d946a8;
+    --violet: #7c3aed;
+    --periwinkle: #4f6ef7;
+    --sky: #3b82f6;
+    --lilac: #8b5cf6;
+    --cream: #1e1040;
+    --muted: #6b5b9a;
+    --text: #1e1040;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-serif: 'DM Serif Display', serif;
+    --font-sans: 'Syne', sans-serif;
+    --font-body: 'Instrument Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: none;
+    transition: background 0.5s ease;
+  }
+  /* ===========================
+     CUSTOM CURSOR
+  =========================== */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--rose);
+    border-radius: 50%;
+    position: fixed; pointer-events: none; z-index: 9999;
+    transition: transform 0.15s ease, background 0.4s ease;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(244,114,182,0.35);
+    border-radius: 50%;
+    position: fixed; pointer-events: none; z-index: 9998;
+    transition: transform 0.35s ease, width 0.2s ease, height 0.2s ease;
+    transform: translate(-50%, -50%);
+  }
+  /* ===========================
+     HERO / SPLASH
+  =========================== */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 6vw 8vw;
+    position: relative;
+    overflow: hidden;
+  }
+  #hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 80% 20%, rgba(124,58,237,0.1) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(217,70,168,0.1) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 50% 50%, rgba(79,110,247,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  
+  .hero-eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+  .hero-name {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 16vw, 14rem);
+    line-height: 0.92;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeUp 0.7s 0.4s forwards;
+  }
+  .hero-name span { color: var(--rose); }
+  .hero-tagline {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+    color: var(--muted);
+    margin-top: 1.5rem;
+    max-width: 600px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.65s forwards;
+  }
+  .hero-tagline em { color: var(--sky); font-style: normal; }
+  .hero-intro {
+    margin-top: 2rem;
+    font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+    color: #3d2e6e;
+    max-width: 520px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.85s forwards;
+    line-height: 1.7;
+  }
+  .scroll-prompt {
+    margin-top: 3rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: var(--font-sans); font-size: 0.75rem;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+    opacity: 0;
+    animation: fadeUp 0.6s 1.1s forwards;
+  }
+  .scroll-line {
+    width: 40px; height: 1px; background: var(--muted);
+    animation: expandLine 1.2s 1.3s ease-out both;
+  }
+  .noise-overlay {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1000;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+  /* ===========================
+     PICK YOUR LENS
+  =========================== */
+  #lens-picker {
+    padding: 6vw 8vw;
+    position: relative;
+  }
+  #lens-picker::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 50% 60% at 0% 50%, rgba(217,70,168,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 100% 50%, rgba(79,110,247,0.07) 0%, transparent 70%);
+  }
+  .section-label {
+    font-family: var(--font-sans);
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 1rem;
+  }
+  .lens-heading {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 1; color: var(--text); margin-bottom: 0.5rem;
+  }
+  .lens-sub {
+    font-family: var(--font-serif); font-style: italic;
+    color: var(--muted); font-size: 1.05rem; margin-bottom: 3rem;
+  }
+  .lens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  .lens-card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2rem 1.75rem;
+    cursor: none;
+    transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    position: relative; overflow: hidden;
+    background: #ede6ff;
+  }
+  .lens-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 3px;
+    background: var(--card-accent, var(--rose));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .lens-card:hover { transform: translateY(-4px); background: #e8deff; }
+  .lens-card:hover::after { transform: scaleX(1); }
+  .lens-card:hover .lens-arrow { transform: translateX(4px); }
+  .lens-card.active {
+    border-color: var(--card-accent, var(--rose));
+    background: rgba(124,58,237,0.06);
+  }  .lens-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .lens-title {
+    font-family: var(--font-sans); font-size: 1.1rem; font-weight: 800;
+    color: var(--text); margin-bottom: 0.35rem;
+  }
+  .lens-desc {
+    font-size: 0.82rem; color: var(--muted); line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+  .lens-arrow {
+    font-size: 0.85rem; color: var(--card-accent, var(--rose));
+    font-family: var(--font-sans); font-weight: 700;
+    letter-spacing: 0.1em; transition: transform 0.2s ease;
+  }
+  /* ===========================
+     CONTENT PANES
+  =========================== */
+  .pane { display: none; padding: 6vw 8vw; }
+  .pane.visible { display: block; animation: fadeIn 0.4s ease; }
+  /* ===========================
+     CORPORATE EMPLOYEE PANE
+  =========================== */
+  .corp-hero {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3rem;
+    background: linear-gradient(135deg, #f0ebff 0%, #ede6ff 50%, #ede6ff 100%);
+    margin-bottom: 3rem;
+    position: relative; overflow: hidden;
+  }
+  .corp-hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--rose), var(--violet), var(--periwinkle), transparent);
+  }
+  .corp-hero::before {
+    content: attr(data-watermark);
+    position: absolute; right: -20px; top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    font-family: var(--font-display);
+    font-size: 6rem; color: rgba(124,58,237,0.07);
+    letter-spacing: 0.05em; pointer-events: none;
+    white-space: nowrap;
+  }
+  .badge {
+    display: inline-block;
+    font-family: var(--font-sans); font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    background: linear-gradient(90deg, var(--rose), var(--violet));
+    color: #fff;
+    padding: 0.3rem 0.75rem; border-radius: 2px; margin-bottom: 1.25rem;
+  }
+  .corp-name {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 1; color: var(--text); margin-bottom: 0.75rem;
+  }
+  .corp-role {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 1.2rem; color: var(--muted);
+  }
+  /* Stats bar */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 4px;
+    overflow: hidden; margin-bottom: 3rem;
+  }
+  .stat-cell {
+    background: #ede6ff;
+    padding: 1.5rem 1.75rem;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    background: linear-gradient(135deg, var(--rose), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.72rem; font-family: var(--font-sans); font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-top: 0.4rem;
+  }
+  /* Content sections */
+  .content-section { margin-bottom: 3.5rem; }
+  .content-section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--text); margin-bottom: 0.25rem; line-height: 1;
+  }
+  .section-divider {
+    width: 40px; height: 2px; background: var(--rose);
+    margin-bottom: 1.5rem;
+  }
+  /* Timeline */
+  .timeline { list-style: none; }
+  .timeline-item {
+    border-left: 1px solid var(--border);
+    padding: 0 0 2.5rem 2rem;
+    position: relative;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -5px; top: 4px;
+    width: 9px; height: 9px;
+    border-radius: 50%; background: var(--rose);
+  }
+  .timeline-period {
+    font-family: var(--font-sans); font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--rose); margin-bottom: 0.3rem;
+  }
+  .timeline-title {
+    font-family: var(--font-sans); font-weight: 800;
+    font-size: 1.05rem; color: var(--text); margin-bottom: 0.15rem;
+  }
+  .timeline-co {
+    font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem;
+  }
+  .timeline-bullets { list-style: none; }
+  .timeline-bullets li {
+    font-size: 0.88rem; color: #3d2e6e; line-height: 1.65;
+    padding-left: 1.1rem; position: relative; margin-bottom: 0.4rem;
+  }
+  .timeline-bullets li::before {
+    content: '↳'; position: absolute; left: 0; color: var(--rose);
+    font-size: 0.75rem; top: 2px;
+  }
+  /* How I think */
+  .think-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .think-card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    background: #ede6ff;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .think-card:hover { border-color: var(--rose); transform: translateY(-3px); }
+  .think-num {
+    font-family: var(--font-display); font-size: 2.5rem;
+    color: rgba(124,58,237,0.15); line-height: 1; margin-bottom: 0.5rem;
+  }
+  .think-text {
+    font-size: 0.92rem; color: #4a3a7a; line-height: 1.55;
+    font-family: var(--font-body);
+  }
+  .think-text strong { color: var(--rose); font-weight: 600; }
+  /* Manager matrix */
+  .matrix-container {
+    border: 1px solid var(--border); border-radius: 4px;
+    overflow: hidden;
+  }
+  .matrix-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .matrix-row:last-child { border-bottom: none; }
+  .matrix-row.header { background: var(--surface); }
+  .matrix-cell {
+    padding: 1rem 1.5rem; border-right: 1px solid var(--border);
+    font-size: 0.88rem; color: #3d2e6e;
+  }
+  .matrix-cell:last-child { border-right: none; }
+  .matrix-row.header .matrix-cell {
+    font-family: var(--font-sans); font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--rose);
+  }
+  .matrix-cell .highlight { color: var(--text); font-weight: 600; }
+  .matrix-cell .tag {
+    display: inline-block;
+    background: rgba(124,58,237,0.12); color: var(--lilac);
+    font-size: 0.72rem; font-family: var(--font-sans); font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.15rem 0.5rem; border-radius: 2px; margin-top: 0.35rem;
+  }
+  /* Why hire */
+  .hire-box {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 2.5rem; background: #ede6ff;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+  }
+  @media (max-width: 600px) { .hire-box { grid-template-columns: 1fr; } }
+  .hire-col h3 {
+    font-family: var(--font-sans); font-size: 0.8rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--violet); margin-bottom: 1rem;
+  }
+  .hire-col.good h3 { color: var(--periwinkle); }
+  .hire-list { list-style: none; }
+  .hire-list li {
+    font-size: 0.87rem; color: #3d2e6e; line-height: 1.65;
+    padding-left: 1.3rem; position: relative; margin-bottom: 0.5rem;
+  }
+  .hire-list li::before {
+    position: absolute; left: 0;
+    color: var(--violet);
+  }
+  .hire-col.good .hire-list li::before { content: '✓'; color: var(--periwinkle); }
+  .hire-col.real .hire-list li::before { content: '×'; color: var(--rose); }
+  /* CV */
+  .cv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .cv-card {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 1.5rem; background: #ede6ff;
+  }
+  .cv-card-label {
+    font-family: var(--font-sans); font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.35rem;
+  }
+  .cv-card-title {
+    font-family: var(--font-sans); font-weight: 800;
+    font-size: 1rem; color: var(--text); margin-bottom: 0.1rem;
+  }
+  .cv-card-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.9rem; }
+  .cv-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .cv-tag {
+    font-size: 0.7rem; font-family: var(--font-sans); font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border: 1px solid var(--border); color: var(--muted);
+    padding: 0.2rem 0.55rem; border-radius: 2px;
+  }
+  /* ===========================
+     MARKETER PANE — EDITORIAL THEME
+  =========================== */
+  :root {
+    --mktr-hot: #c026d3;
+    --mktr-mid: #7c3aed;
+    --mktr-cool: #2563eb;
+    --mktr-deep: #f0ebff;
+    --mktr-surface: #e8deff;
+    --mktr-border: #c8b8f0;
+  }
+  #pane-marketer {
+    background: var(--mktr-deep);
+    position: relative;
+    overflow: hidden;
+  }
+  #pane-marketer::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 65% 55% at 10% 15%, rgba(192,38,211,0.09) 0%, transparent 60%),
+      radial-gradient(ellipse 55% 50% at 90% 85%, rgba(37,99,235,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 45% at 55% 45%, rgba(124,58,237,0.07) 0%, transparent 60%);
+  }
+  #pane-marketer > * { position: relative; z-index: 1; }
+  .marketer-hero {
+    padding: 3.5rem;
+    border: 1px solid var(--mktr-border);
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(192,38,211,0.07) 0%, rgba(240,235,255,0.97) 50%, rgba(37,99,235,0.05) 100%);
+    margin-bottom: 2.5rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    position: relative; overflow: hidden;
+  }
+  .marketer-hero::before {
+    content: 'MARKETER';
+    position: absolute; right: -30px; top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    font-family: var(--font-display);
+    font-size: 7rem; color: rgba(192,38,211,0.06);
+    letter-spacing: 0.1em; pointer-events: none;
+    white-space: nowrap;
+  }
+  .marketer-hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--mktr-hot), var(--mktr-mid), var(--mktr-cool), transparent);
+  }
+  .mktr-name {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 8vw, 7rem);
+    line-height: 0.95;
+    background: linear-gradient(135deg, #1e1040 0%, var(--mktr-hot) 50%, var(--mktr-cool) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .mktr-meta {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: 1.1rem;
+    background: linear-gradient(90deg, var(--mktr-hot), var(--mktr-cool));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  /* Marketer badge */
+  #pane-marketer .badge {
+    background: linear-gradient(90deg, var(--mktr-hot), var(--mktr-mid), var(--mktr-cool));
+    color: #fff;
+    border: none;
+  }
+  /* Metrics bar — marketer version */
+  .metrics-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px; background: var(--mktr-border);
+    border: 1px solid var(--mktr-border); border-radius: 6px;
+    overflow: hidden; margin-bottom: 2.5rem;
+  }
+  .metric-cell {
+    background: var(--mktr-surface);
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    position: relative;
+    transition: background 0.25s ease;
+  }
+  .metric-cell:hover { background: rgba(192,38,211,0.06); }
+  .metric-cell::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--mktr-hot), var(--mktr-cool));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .metric-cell:hover::after { transform: scaleX(1); }
+  .metric-cell .num {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    background: linear-gradient(135deg, var(--mktr-hot), var(--mktr-cool));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1; display: block;
+  }
+  .metric-cell .lbl {
+    font-size: 0.68rem; font-family: var(--font-sans); font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: #7c3aed; margin-top: 0.4rem; display: block;
+  }
+  /* Coming soon — marketer version */
+  #pane-marketer .content-section h2 {
+    background: linear-gradient(135deg, #1e1040 0%, var(--mktr-hot) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  #pane-marketer .section-divider {
+    background: linear-gradient(90deg, var(--mktr-hot), var(--mktr-mid), var(--mktr-cool), transparent);
+    width: 80px; height: 2px;
+  }
+  #pane-marketer .body-text { color: #4a3a7a; }
+  #pane-marketer .coming-pill {
+    border: 1px solid var(--mktr-hot);
+    color: var(--mktr-hot);
+    background: rgba(192,38,211,0.05);
+    font-family: var(--font-sans); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0.5rem 1.25rem; border-radius: 2px;
+    display: inline-block;
+  }
+  /* ===========================
+     HUMAN PANE
+  =========================== */
+  .human-intro {
+    font-family: var(--font-serif); font-style: italic;
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    color: #3d2e6e; max-width: 640px;
+    line-height: 1.65; margin-bottom: 3rem;
+  }
+  .human-intro em { color: var(--lilac); font-style: normal; }
+  .coming-pill {
+    display: inline-block;
+    font-family: var(--font-sans); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--lilac);
+    color: var(--lilac); padding: 0.5rem 1.25rem; border-radius: 2px;
+  }
+  /* ===========================
+     NAV
+  =========================== */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.25rem 8vw;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(245,240,255,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s;
+  }
+  nav.scrolled { border-bottom-color: var(--border); }
+  .nav-logo {
+    font-family: var(--font-display); font-size: 1.4rem;
+    color: var(--text); letter-spacing: 0.05em;
+  }
+  .nav-logo span { color: var(--rose); }
+  .nav-back {
+    font-family: var(--font-sans); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); cursor: none;
+    background: none; border: none; transition: color 0.2s;
+    display: none;
+  }
+  .nav-back:hover { color: var(--rose); }
+  .nav-back.visible { display: block; }
+  /* ===========================
+     UTILITIES & ANIMATIONS
+  =========================== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes expandLine {
+    from { transform: scaleX(0); } to { transform: scaleX(1); }
+  }
+  .tag-lime { color: var(--rose); }
+  .tag-sky  { color: var(--sky); }
+  .tag-coral{ color: var(--violet); }
+  .tag-lilac{ color: var(--lilac); }
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  /* sub-nav tabs */
+  .sub-nav {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+  .sub-tab {
+    font-family: var(--font-sans); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); padding: 0.5rem 1.1rem;
+    border-radius: 2px; cursor: none;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .sub-tab:hover { border-color: var(--rose); color: var(--rose); }
+  .sub-tab.active { background: var(--rose); color: #f5f0ff; border-color: var(--rose); }
+  .sub-tab:hover { border-color: var(--rose); color: var(--rose); }
+  .sub-pane { display: none; }
+  .sub-pane.visible { display: block; animation: fadeIn 0.35s ease; }
+  p.body-text {
+    font-size: 0.92rem; color: #3d2e6e; line-height: 1.72;
+    max-width: 700px; margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 768px) {
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+    nav { padding: 1rem 6vw; }
+    #hero, #lens-picker, .pane { padding: 10vw 6vw; }
+    .corp-hero, .marketer-hero { padding: 2rem; }
+    .hire-box { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="noise-overlay"></div>
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+<nav id="navbar">
+  <div class="nav-logo">A<span>.</span></div>
+  <button class="nav-back" id="backBtn" onclick="goBack()">← back to lenses</button>
+</nav>
+<!-- ===================== HERO ===================== -->
+<section id="hero">
+  <p class="hero-eyebrow">Open if you're a recruiter</p>
+  <h1 class="hero-name">Hi, I'm<br><span>Anika.</span></h1>
+  <p class="hero-tagline">22. <em>Ambitious.</em> Based in Bangalore.</p>
+  <p class="hero-intro">
+    Most 22-year-olds are still figuring out their passwords. I've been the single point of contact for some of the most demanding corporate clients in the room — and they keep calling me back. Now I'm looking for the role that matches the energy.
+  </p>
+  <div class="scroll-prompt">
+    <span class="scroll-line"></span>
+    scroll to pick your lens
+  </div>
+</section>
+<!-- ===================== LENS PICKER ===================== -->
+<section id="lens-picker">
+  <p class="section-label">Choose your filter</p>
+  <h2 class="lens-heading">How would you<br>like to know me?</h2>
+  <p class="lens-sub">Same person, different angle. Pick one.</p>
+  <div class="lens-grid">
+    <div class="lens-card" style="--card-accent: #d946a8;" onclick="openPane('corp')">
+      <div class="lens-icon">⚡</div>
+      <div class="lens-title">The Perfect Employee</div>
+      <div class="lens-desc">Numbers, processes, performance. The full corporate breakdown.</div>
+      <div class="lens-arrow">View →</div>
+    </div>
+    <div class="lens-card" style="--card-accent: #c026d3;" onclick="openPane('marketer')">
+      <div class="lens-icon">📡</div>
+      <div class="lens-title">The Marketer</div>
+      <div class="lens-desc">Campaigns, content, strategy. How I think about audiences.</div>
+      <div class="lens-arrow">View →</div>
+    </div>
+    <div class="lens-card" style="--card-accent: #7c3aed;" onclick="openPane('human')">
+      <div class="lens-icon">✶</div>
+      <div class="lens-title">The Human</div>
+      <div class="lens-desc">Jammu girl, Bangalore life, and the stuff that drives me.</div>
+      <div class="lens-arrow">View →</div>
+    </div>
+    <div class="lens-card" style="--card-accent: #4f6ef7;" onclick="openPane('strategist')">
+      <div class="lens-icon">🧩</div>
+      <div class="lens-title">The Strategist</div>
+      <div class="lens-desc">How I think, how I build, how I fix things before they break.</div>
+      <div class="lens-arrow">View →</div>
+    </div>
+  </div>
+</section>
+<!-- ===================== PANES ===================== -->
+<!-- CORPORATE EMPLOYEE -->
+<section class="pane" id="pane-corp">
+  <div class="corp-hero" data-watermark="THE EMPLOYEE">
+    <span class="badge">Senior Associate · Account Manager</span>
+    <h2 class="corp-name">The Perfect<br>Employee.</h2>
+    <p class="corp-role">Actually, the ideal one — and there's a difference.</p>
+  </div>
+  <!-- Sub nav -->
+  <div class="sub-nav">
+    <button class="sub-tab active" onclick="switchTab('corp','journey')">My Journey</button>
+    <button class="sub-tab" onclick="switchTab('corp','think')">How I Think</button>
+    <button class="sub-tab" onclick="switchTab('corp','matrix')">The Employee You Want</button>
+    <button class="sub-tab" onclick="switchTab('corp','ideal')">Why Ideal &gt; Perfect</button>
+  </div>
+  <!-- Journey -->
+  <div class="sub-pane visible" id="corp-journey">
+    <div class="content-section">
+      <h2>My Full-Time Corporate Journey</h2>
+      <div class="section-divider"></div>
+      <ul class="timeline">
+        <li class="timeline-item">
+          <p class="timeline-period">Current Role</p>
+          <p class="timeline-title">Senior Associate — Account Manager</p>
+          <p class="timeline-co">Visit Health, Bengaluru</p>
+          <ul class="timeline-bullets">
+            <li>Core member of the Corporate BU vertical, managing the company's most complex and high-value client relationships as the single point of contact.</li>
+            <li>Led end-to-end account management for a ₹20 Cr portfolio across 10+ corporate brands — translated client objectives into engagement strategies and executed 70+ online and on-ground campaigns to drive account growth.</li>
+            <li>Designed reporting frameworks and maintained CRM data hygiene to track client performance, utilization, and category-wise growth — generating insights that reduced escalations by 70% and improved operational efficiency by 45%.</li>
+            <li>Drove cross-functional collaboration across product, project management, design, marketing, and operations — restructured key SOPs, contributed to major product developments, and achieved a 99% on-time delivery rate.</li>
+            <li>Organised 80+ corporate wellness events end-to-end including speaker sessions, health camps, Zumba classes, wellness fairs, and stepathons — handling everything from vendor coordination to on-ground execution.</li>
+          </ul>
+        </li>
+        <li class="timeline-item">
+          <p class="timeline-period">Jun 2023 – Jul 2023</p>
+          <p class="timeline-title">Intern — Digital Marketing & Sales</p>
+          <p class="timeline-co">Lifex.Cloud, Bengaluru</p>
+          <ul class="timeline-bullets">
+            <li>Planned and executed digital marketing campaigns by identifying target audiences, defining messaging, and aligning creative outputs to support lead generation and client acquisition.</li>
+            <li>Collaborated on content and visual direction for digital campaigns, ensuring brand consistency and improved audience engagement.</li>
+          </ul>
+        </li>
+        <li class="timeline-item">
+          <p class="timeline-period">Jan 2023 – Mar 2023</p>
+          <p class="timeline-title">Community Intern</p>
+          <p class="timeline-co">Pushstart Media Network, Mumbai</p>
+          <ul class="timeline-bullets">
+            <li>Managed and executed daily social media campaigns and content strategies for a community of 25,000+ members, maintaining consistently high engagement levels.</li>
+          </ul>
+        </li>
+        <li class="timeline-item">
+          <p class="timeline-period">Jun 2022 – Jul 2022</p>
+          <p class="timeline-title">Volunteer</p>
+          <p class="timeline-co">Indian Red Cross Society</p>
+          <ul class="timeline-bullets">
+            <li>Volunteered 60 hours contributing to two blood donation drives, supporting immunisation efforts in underserved communities, and assisting the Childline project.</li>
+            <li>Engaged in 10+ case studies involving child labour and abuse, while also acquiring foundational first-aid skills.</li>
+          </ul>
+        </li>
+        <li class="timeline-item">
+          <p class="timeline-period">Jan 2022 – Jun 2022</p>
+          <p class="timeline-title">Junior Manager — Outgoing Corporate Sector</p>
+          <p class="timeline-co">AIESEC Mumbai</p>
+          <ul class="timeline-bullets">
+            <li>Conducted structured market research to identify 100+ corporate opportunities and led 50+ client interactions to drive lead conversions and prospect engagements.</li>
+            <li>Coordinated meetings with potential partners, demonstrating leadership and sustained contribution to the organization.</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- How I Think -->
+  <div class="sub-pane" id="corp-think">
+    <div class="content-section">
+      <h2>How I Approach Work</h2>
+      <div class="section-divider"></div>
+      <p class="body-text">I'm not 22 in the way people expect 22 to look. Here's how I actually operate:</p>
+      <div class="think-grid">
+        <div class="think-card">
+          <div class="think-num">01</div>
+          <div class="think-text"><strong>I learn fast, then I own it.</strong><br>My manager gave me increasing responsibility within months because I didn't just absorb information — I applied it, then pushed it forward on my own.</div>
+        </div>
+        <div class="think-card">
+          <div class="think-num">02</div>
+          <div class="think-text"><strong>I communicate before things break.</strong><br>99% on-time delivery isn't luck. It's because I flag dependencies early, over-communicate timelines, and don't let problems age.</div>
+        </div>
+        <div class="think-card">
+          <div class="think-num">03</div>
+          <div class="think-text"><strong>Feedback lands with me.</strong><br>When told I was over-relying on validation, I didn't get defensive — I built a different habit. My manager's biggest piece of feedback became my biggest professional leap.</div>
+        </div>
+        <div class="think-card">
+          <div class="think-num">04</div>
+          <div class="think-text"><strong>I do the unsexy work too.</strong><br>CRM hygiene. Reporting cadences. SOP documentation. I don't skip the unglamorous parts because I know they're what keep everything else standing.</div>
+        </div>
+        <div class="think-card">
+          <div class="think-num">05</div>
+          <div class="think-text"><strong>Cross-functional is my native language.</strong><br>I've coordinated with product, ops, design, marketing, and project teams — without formal authority. I build trust across teams before I need a favour from them.</div>
+        </div>
+        <div class="think-card">
+          <div class="think-num">06</div>
+          <div class="think-text"><strong>I show up for people, not just projects.</strong><br>Mentored a new joiner through the Buddy Manager program while managing my full account load. Because growth that only benefits me isn't interesting.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Matrix -->
+  <div class="sub-pane" id="corp-matrix">
+    <div class="content-section">
+      <h2>The Employee Your Team Wants to Meet</h2>
+      <div class="section-divider"></div>
+      <p class="body-text">Here's a manager's-eye view, mapped from actual performance data and review cycles:</p>
+      <div class="matrix-container">
+        <div class="matrix-row header">
+          <div class="matrix-cell">Competency</div>
+          <div class="matrix-cell">What it looks like in me</div>
+        </div>
+        <div class="matrix-row">
+          <div class="matrix-cell"><span class="highlight">Discipline & Delivery</span></div>
+          <div class="matrix-cell">99% on-time delivery rate. Tracks every workstream, flags delays before they happen, never drops the ball. <span class="tag">Top of team</span></div>
+        </div>
+        <div class="matrix-row">
+          <div class="matrix-cell"><span class="highlight">Data Interpretation</span></div>
+          <div class="matrix-cell">Went from struggling with raw data to designing reporting frameworks that reduced client escalations by 70%. <span class="tag">Independently built</span></div>
+        </div>
+        <div class="matrix-row">
+          <div class="matrix-cell"><span class="highlight">Cross-functional Work</span></div>
+          <div class="matrix-cell">Coordinates across product, design, ops, and marketing. Built collaborative workflows that outlasted individual projects. <span class="tag">Scaled fast</span></div>
+        </div>
+        <div class="matrix-row">
+          <div class="matrix-cell"><span class="highlight">Client-Facing Skills</span></div>
+          <div class="matrix-cell">Runs demo calls that earn compliments on clarity and composure. Manages 10+ complex corporate accounts independently. <span class="tag">Above level</span></div>
+        </div>
+        <div class="matrix-row">
+          <div class="matrix-cell"><span class="highlight">Ownership</span></div>
+          <div class="matrix-cell">Mentored a new joiner through the Buddy Manager program — taking on extra load during late hours, no complaint, full delivery. <span class="tag">Promotes independently</span></div>
+        </div>
+        <div class="matrix-row">
+          <div class="matrix-cell"><span class="highlight">Event Organising</span></div>
+          <div class="matrix-cell">Organised 80+ events end-to-end — speaker sessions, health camps, Zumba classes, wellness fairs, stepathons, and more. Logistics, coordination, execution: all of it. <span class="tag">80+ events</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Why Ideal -->
+  <div class="sub-pane" id="corp-ideal">
+    <div class="content-section">
+      <h2>Why I'm Not Perfect — But Ideal</h2>
+      <div class="section-divider"></div>
+      <p class="body-text">Perfect is polished. Ideal is real. Here's the honest version:</p>
+      <div class="hire-box">
+        <div class="hire-col good">
+          <h3>What you're actually hiring</h3>
+          <ul class="hire-list">
+            <li>Someone who built a ₹20Cr account management practice from scratch and owned it fully before 23.</li>
+            <li>A person who took constructive feedback about over-relying on validation — and completely transformed their working style.</li>
+            <li>A strategist who uses data to prevent problems, not just report them.</li>
+            <li>Someone who mentors others while still growing herself, because that's just who she is.</li>
+            <li>High agency, high ownership, low drama. The person your senior team trusts without babysitting.</li>
+          </ul>
+        </div>
+        <div class="hire-col real">
+          <h3>What I'm still working on</h3>
+          <ul class="hire-list">
+            <li>Early in my career I panicked during unexpected escalations. I've worked through it — but I'll always own that that was a real gap.</li>
+            <li>I used to need validation on decisions I already knew the answer to. That's behind me, but worth naming.</li>
+            <li>I'm 22. I don't have 8 years of experience. I have 2 years of intentionally deep experience — and the self-awareness to know the difference.</li>
+            <li>I'm ambitious, which means I might push back on things that don't make sense to me. I do it respectfully, but I do it.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- CV -->
+</section>
+<!-- MARKETER -->
+<section class="pane" id="pane-marketer">
+  <div class="marketer-hero">
+    <span class="badge">Lens: Marketer</span>
+    <h2 class="mktr-name">I don't just like brands.<br>I decode them.</h2>
+    <p class="mktr-meta">Audience-obsessed. Systems-driven. Storytelling-first.</p>
+    <p class="body-text" style="max-width:680px; margin-top:1rem;">
+      Since childhood, I've been that kid who remembered ad jingles before nursery rhymes. While others watched cartoons, I was studying why Cadbury's "Kuch Meetha Ho Jaye" worked, why KitKat's "Have a break" stuck, why Center Fresh's "Jeep Laplapay" became iconic. Brand strategy and campaign management? They come naturally to me — not because I studied them first, but because I've been decoding them my entire life.
+    </p>
+  </div>
+  <!-- What I Notice -->
+  <div class="content-section">
+    <h2>The Campaigns I Notice (While Everyone Else Scrolls Past)</h2>
+    <div class="section-divider"></div>
+    <p class="body-text">
+      I don't just consume marketing — I dissect it. Here's what catches my eye in the current landscape:
+    </p>
+    
+    <div class="think-grid" style="margin-top: 2rem;">
+      <div class="think-card" style="border-color: var(--mktr-hot);">
+        <div class="think-num" style="color: rgba(192,38,211,0.15);">01</div>
+        <div class="think-text"><strong style="color:var(--mktr-hot);">McDonald's Collectibles</strong><br>How they're using nostalgia-driven merchandise bundled with meals to drive footfall and social buzz. It's not just a Happy Meal — it's a collector's item. <a href="https://mcdcollectible.my.canva.site/" target="_blank" style="color:var(--mktr-hot); text-decoration:underline; font-weight:600;">View my analysis →</a></div>
+      </div>
+      
+      <div class="think-card" style="border-color: var(--mktr-mid);">
+        <div class="think-num" style="color: rgba(124,58,237,0.15);">02</div>
+        <div class="think-text"><strong style="color:var(--mktr-mid);">Tira's Offline Strategy</strong><br>They opened in Koramangala and partnered with AB's Absolute Barbecues for a Christmas activation. Smart retail meets experiential — building brand presence beyond the digital feed.</div>
+      </div>
+      
+      <div class="think-card" style="border-color: var(--mktr-cool);">
+        <div class="think-num" style="color: rgba(37,99,235,0.15);">03</div>
+        <div class="think-text"><strong style="color:var(--mktr-cool);">Zomaland</strong><br>Annual branded festival that monetizes community while positioning Zomato as more than a food app — they're a lifestyle brand. Genius move.</div>
+      </div>
+      
+      <div class="think-card" style="border-color: var(--mktr-hot);">
+        <div class="think-num" style="color: rgba(192,38,211,0.15);">04</div>
+        <div class="think-text"><strong style="color:var(--mktr-hot);">The Classics</strong><br>Cadbury's "Kuch Meetha Ho Jaye," Kiss Me "Close Your Eyes," Idea's anthem, Center Fresh "Jeep Laplapay" — campaigns that created cultural moments, not just ads.</div>
+      </div>
+    </div>
+  </div>
+  <!-- Projects -->
+  <div class="content-section">
+    <h2>2 of My Favourite College Projects</h2>
+    <div class="section-divider"></div>
+    <p class="body-text">
+      Brand strategy isn't theoretical for me. Throughout college, I obsessively built campaigns, analyzed positioning, and solved real marketing problems. Here's the proof:
+    </p>
+    
+    <div class="cv-grid" style="margin-top: 2rem;">
+      <div class="cv-card" style="border-color: var(--mktr-mid); background: rgba(124,58,237,0.03);">
+        <div class="cv-card-label" style="color: var(--mktr-mid);">College Project</div>
+        <div class="cv-card-title">Brand Strategy Analysis</div>
+        <div class="cv-card-sub">Deep-dive into brand positioning and market strategy</div>
+        <a href="https://www.canva.com/design/DAG_0vYAqH8/ZDWOsF0-0m8fgmGpSQNU4g/edit?utm_content=DAG_0vYAqH8&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" style="display:inline-block; margin-top:0.75rem; font-family: var(--font-sans); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mktr-mid); text-decoration: none; border-bottom: 1px solid var(--mktr-mid); padding-bottom: 2px;">View Project →</a>
+      </div>
+      
+      <div class="cv-card" style="border-color: var(--mktr-cool); background: rgba(37,99,235,0.03);">
+        <div class="cv-card-label" style="color: var(--mktr-cool);">College Project</div>
+        <div class="cv-card-title">Marketing Campaign Design</div>
+        <div class="cv-card-sub">End-to-end campaign development and execution strategy</div>
+        <a href="https://www.canva.com/design/DAHBDn4Nwik/bwtuKp6FhXW2fFL03e4gig/edit?utm_content=DAHBDn4Nwik&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" target="_blank" style="display:inline-block; margin-top:0.75rem; font-family: var(--font-sans); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mktr-cool); text-decoration: none; border-bottom: 1px solid var(--mktr-cool); padding-bottom: 2px;">View Project →</a>
+      </div>
+    </div>
+    
+    <p class="body-text" style="margin-top: 2rem; font-style: italic; color: var(--mktr-mid);">
+      I love analyzing brands. I love providing solutions. I love problems. As a marketer, I want popular brands to stay popular, experiment boldly, and get the traction they deserve.
+    </p>
+  </div>
+</section>
+<!-- HUMAN -->
+<section class="pane" id="pane-human">
+  <span class="badge" style="background: var(--lilac); color: #0a0a0a;">Lens: Human</span>
+  <p class="human-intro">
+    Jammu girl. <em>Bangalore life.</em> First-generation hustler who figured it out along the way —
+    and is still figuring it out, honestly.
+  </p>
+  <div class="content-section">
+    <h2 style="font-family: var(--font-display); font-size: clamp(1.8rem,4vw,2.8rem); color: var(--text); margin-bottom:0.25rem;">
+      The Person Behind The Work
+    </h2>
+    <div class="section-divider" style="background: var(--lilac);"></div>
+    <p class="body-text">
+      The stuff that doesn't fit in a resume — what I actually care about, how I think, and what makes me, me.
+    </p>
+    <div class="think-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 2rem;">
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--rose);">🏊‍♀️ National-Level Swimmer</strong><br>Seven years of competitive swimming. Discipline, endurance, and the ability to keep going when your lungs are screaming? Yeah, I've got that.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--violet);">🏸 Badminton Obsessed</strong><br>Every evening after work, you'll find me on the court. It's my reset button.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--periwinkle);">🎉 The Event Planner</strong><br>Going on a trip with me? Sit back and relax — I've got the itinerary, the reservations, the backup plans. Event planning comes naturally.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--rose);">👗 Fashion Enthusiast</strong><br>Shopaholic, coffee lover, and someone who notices the smallest details in how brands present themselves — because presentation is strategy.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--violet);">🎲 The Game Master</strong><br>Catan. Mafia. Undercover. I can turn any gathering into a game night. I come prepared with options and I make everyone play.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--periwinkle);">✈️ Can't Stop Traveling</strong><br>New places, new patterns, new inspiration. I need to move. I need to explore. I can't stay still for too long.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--rose);">🎨 Occasional Artist</strong><br>Sometimes I draw. And when I do, I convince myself I'm the greatest artist alive. (I'm not. But the confidence is real.)</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--violet);">🎭 Loves Feeling Cinematic</strong><br>That main character energy? I chase it. Life should feel like a movie sometimes.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--periwinkle);">💭 Randomly Sentimental</strong><br>Old songs. Old chats. Random memories. I get hit by nostalgia out of nowhere and I feel everything.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--rose);">🎭 Wants to Be Mysterious</strong><br>I love the idea of being mysterious. Problem is, I can't pull it off. I'm too expressive.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--violet);">🎯 Details Observer</strong><br>I notice the smallest things. The tiniest shifts in tone, design, messaging. It's a blessing and a curse.</div>
+      </div>
+      <div class="think-card" style="border-color: var(--lilac);">
+        <div class="think-text"><strong style="color:var(--periwinkle);">🎉 Extremely Outgoing</strong><br>I'm the person who plans the trip, organizes the party, coordinates the group. Zero brain cells required from anyone else — I've got it covered.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- STRATEGIST -->
+<section class="pane" id="pane-strategist">
+  <div class="corp-hero" data-watermark="THE STRATEGIST" style="--card-accent: var(--periwinkle);">
+    <span class="badge" style="background: linear-gradient(90deg, var(--periwinkle), var(--sky));">Lens: Strategist</span>
+    <h2 class="corp-name">The<br>Strategist.</h2>
+    <p class="corp-role">I don't just manage accounts. I build the systems that keep them healthy.</p>
+  </div>
+  <div class="content-section">
+    <h2>How I Build Strategy</h2>
+    <div class="section-divider" style="background: linear-gradient(90deg, var(--periwinkle), var(--sky), transparent);"></div>
+    <p class="body-text">My approach isn't reactive. I build systems so problems don't get the chance to escalate.</p>
+    <div class="think-grid">
+      <div class="think-card">
+        <div class="think-num" style="color: rgba(255,94,87,0.25);">01</div>
+        <div class="think-text"><strong style="color:var(--periwinkle);">Reporting as strategy.</strong><br>I designed frameworks that turned CRM data into action plans — not just status updates. If a report doesn't change a decision, it's just noise.</div>
+      </div>
+      <div class="think-card">
+        <div class="think-num" style="color: rgba(255,94,87,0.25);">02</div>
+        <div class="think-text"><strong style="color:var(--periwinkle);">Client to product pipeline.</strong><br>I don't just relay client feedback — I diagnose patterns, contextualize issues, and feed insights back to the product team in formats they can actually act on.</div>
+      </div>
+      <div class="think-card">
+        <div class="think-num" style="color: rgba(255,94,87,0.25);">03</div>
+        <div class="think-text"><strong style="color:var(--periwinkle);">SOP rebuilds, not patches.</strong><br>When a process breaks repeatedly, I don't add another workaround. I go back to first principles and rebuild it. Done this for key SOPs across the corporate vertical.</div>
+      </div>
+      <div class="think-card">
+        <div class="think-num" style="color: rgba(255,94,87,0.25);">04</div>
+        <div class="think-text"><strong style="color:var(--periwinkle);">Proactive escalation management.</strong><br>Reduced escalations by 70% — not by working harder in the moment, but by building a system that saw them coming and removed the root cause.</div>
+      </div>
+    </div>
+  </div>
+  <div class="content-section">
+    <h2>How I Got Here — In Three Phases</h2>
+    <div class="section-divider" style="background: linear-gradient(90deg, var(--periwinkle), var(--sky), transparent);"></div>
+    <p class="body-text">My manager documented my growth across three distinct phases. Here it is, unfiltered.</p>
+    <ul class="timeline">
+      <li class="timeline-item" style="border-left-color: rgba(255,94,87,0.3);">
+        <p class="timeline-period" style="color:var(--periwinkle);">Phase 1 — Foundation</p>
+        <p class="timeline-title">Learning to Think in Systems</p>
+        <ul class="timeline-bullets">
+          <li>Onboarded into a high-stakes corporate vertical with hands-on guidance. Built early competencies in analytical thinking, structured communication, and stakeholder management.</li>
+          <li>Early challenge: panicking during escalations and narrating client issues instead of converting them into solutions. Worked through it methodically with structured feedback.</li>
+        </ul>
+      </li>
+      <li class="timeline-item" style="border-left-color: rgba(255,94,87,0.3);">
+        <p class="timeline-period" style="color:var(--periwinkle);">Phase 2 — Client Ownership</p>
+        <p class="timeline-title">From Backend Support to Front-Line Strategy</p>
+        <ul class="timeline-bullets">
+          <li>Moved from data analysis and operational support to owning client conversations. Began identifying trends, diagnosing root-cause issues, and recommending product and process adjustments.</li>
+          <li>Proactive interventions started preventing escalations before they happened — not just resolving them after.</li>
+        </ul>
+      </li>
+      <li class="timeline-item" style="border-left-color: rgba(255,94,87,0.3); padding-bottom:0;">
+        <p class="timeline-period" style="color:var(--periwinkle);">Phase 3 — Full Autonomy</p>
+        <p class="timeline-title">Independent, Accountable, High-Impact</p>
+        <ul class="timeline-bullets">
+          <li>Assigned full ownership of complex accounts after one year. Manager's role shifted to supervisory oversight, not day-to-day involvement.</li>
+          <li>Overcame earlier anxiety under pressure. Now handles unexpected issues with maturity and steady judgment. Mentored a new joiner while maintaining full account performance.</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</section>
+<script>
+  // Cursor
+  const cur = document.getElementById('cur');
+  const ring = document.getElementById('ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    cur.style.left = mx + 'px'; cur.style.top = my + 'px';
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+  // Nav scroll
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+  });
+  // State
+  let activePane = null;
+  function openPane(id) {
+    // Hide lens picker & hero
+    document.getElementById('hero').style.display = 'none';
+    document.getElementById('lens-picker').style.display = 'none';
+    // Hide all panes
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('visible'));
+    // Show target
+    document.getElementById('pane-' + id).classList.add('visible');
+    activePane = id;
+    document.getElementById('backBtn').classList.add('visible');
+    setNavAccent(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Swap cursor + body bg for marketer pane
+    const curEl = document.getElementById('cur');
+    if (id === 'marketer') {
+      document.body.style.background = '#fdf0ff';
+      curEl.style.background = '#c026d3';
+    } else {
+      document.body.style.background = '';
+      curEl.style.background = '';
+    }
+  }
+  function goBack() {
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('visible'));
+    document.getElementById('hero').style.display = '';
+    document.getElementById('lens-picker').style.display = '';
+    document.getElementById('backBtn').classList.remove('visible');
+    document.body.style.background = '';
+    document.getElementById('cur').style.background = '';
+    activePane = null;
+    document.getElementById('lens-picker').scrollIntoView({ behavior: 'smooth' });
+  }
+  function switchTab(pane, sub) {
+    document.querySelectorAll('#pane-' + pane + ' .sub-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#pane-' + pane + ' .sub-pane').forEach(p => p.classList.remove('visible'));
+    document.getElementById(pane + '-' + sub).classList.add('visible');
+    event.target.classList.add('active');
+  }
+  // Update nav back button colour per pane
+  const backBtn = document.getElementById('backBtn');
+  const accentMap = { corp: '#d946a8', marketer: '#c026d3', human: '#7c3aed', strategist: '#4f6ef7' };
+  function setNavAccent(id) {
+    const c = accentMap[id] || '#d946a8';
+    backBtn.style.setProperty('--nav-accent', c);
+  }
+  backBtn.addEventListener('mouseover', () => {
+    backBtn.style.color = backBtn.style.getPropertyValue('--nav-accent') || '#d946a8';
+  });
+  backBtn.addEventListener('mouseout', () => { backBtn.style.color = ''; });
+</script>
+</body>
+</html>
